@@ -1,0 +1,73 @@
+version: "2"
+
+volumes:
+  data_mysql:
+    driver: local
+
+
+services:
+
+  db:
+    image: mariadb
+    ports:
+      - 3309:3306
+    environment:
+      MYSQL_DATABASE: money_exchange
+      MYSQL_USER: lara
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+
+  code:
+    image: tianon/true
+    volumes:
+      - ./:/app
+
+# Service container
+  workspace:
+    build:
+      context: docker/php
+      args:
+        - INSTALL_XDEBUG=true
+        - INSTALL_PHPUNIT=true
+        - INSTALL_COMPOSER=true
+    volumes_from:
+      - code
+    links:
+      - web
+      - db:db
+    env_file:
+      - .env.docker
+    tty: true
+    working_dir: /app
+    command: sh -c "sh"
+
+# PHP-FPM
+  php:
+    build:
+      context: docker/php
+      args:
+        - INSTALL_XDEBUG=true
+    volumes_from:
+      - code
+    links:
+      - db
+    tty: true
+    env_file:
+      - .env.docker
+
+# nginx
+  web:
+    build:
+      context: docker/nginx
+    volumes_from:
+      - code
+    ports:
+      - 8085:80
+    links:
+      - php
+    environment:
+     - NGINX_HOST=exchenge.in
+     - NGINX_PORT=80
+     - FPM_HOST=php
+     - FPM_PORT=9000
+    #command: /bin/bash -c "envsubst '$$NGINX_HOST $$NGINX_PORT $$FPM_HOST $$FPM_PORT' < /etc/nginx/conf.d/sms_service.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"

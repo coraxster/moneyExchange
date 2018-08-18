@@ -1,0 +1,64 @@
+FROM php:7.2.0-fpm
+MAINTAINER Dmitry Kuzmin rockwith@me.com
+
+RUN DEBIAN_FRONTEND=noninteractive \
+	apt-get update && \
+	apt-get -y --no-install-recommends install \
+	    mc \
+	    software-properties-common \
+	    libxml2-dev \
+	    php-soap \
+        curl \
+        libmemcached-dev \
+        libz-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
+        libssl-dev && \
+    pecl channel-update pecl.php.net && \
+	docker-php-ext-install zip && \
+	docker-php-ext-install tokenizer && \
+  	docker-php-ext-install pdo_mysql && \
+  	docker-php-ext-configure gd \
+        --enable-gd-native-ttf \
+        --with-jpeg-dir=/usr/lib \
+        --with-freetype-dir=/usr/include/freetype2 && \
+    docker-php-ext-install gd && \
+    docker-php-ext-install soap
+
+#-------------XDEBUG----------------
+ARG INSTALL_XDEBUG=false
+RUN if [ ${INSTALL_XDEBUG} = true ]; then \
+#    pecl install xdebug && \
+#    docker-php-ext-enable xdebug \
+    pecl install xdebug-2.6.0alpha1 && \
+    docker-php-ext-enable xdebug \
+;fi
+
+#-------------COMPOSER----------------
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php composer-setup.php && \
+    php -r "unlink('composer-setup.php');" && \
+    mv composer.phar /usr/local/bin/composer
+
+#-------------PHPUNIT----------------
+ARG INSTALL_PHPUNIT=false
+RUN if [ ${INSTALL_PHPUNIT} = true ]; then \
+php -r "copy('https://phar.phpunit.de/phpunit.phar', 'phpunit.phar');" && \
+    chmod +x phpunit.phar && \
+    mv phpunit.phar /usr/local/bin/phpunit \
+	;fi
+
+#-------------OPCACHE----------------
+#RUN docker-php-ext-configure opcache --enable-opcache \
+#    && docker-php-ext-install opcache
+
+RUN apt-get -y install librabbitmq-dev
+RUN pecl install amqp
+RUN docker-php-ext-enable amqp
+
+ADD opcache.ini  /usr/local/etc/php/conf.d/
+ADD xdebug.ini /usr/local/etc/php/conf.d/
+
+
+CMD ["php-fpm"]
+EXPOSE 9000

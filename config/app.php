@@ -211,4 +211,10 @@ return [
 
     ],
 
+	'currencies' => [
+		'USD',
+		'EUR',
+		'RUB'
+	],
+	'mediate_currency' => 'USD'
 ];

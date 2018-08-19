@@ -33,7 +33,6 @@ services:
     volumes_from:
       - code
     links:
-      - web
       - db:db
     env_file:
       - .env.docker

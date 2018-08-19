@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Log;
 use Money\Currency;
 use Money\Money;
 
+/**
+ * Class UserController
+ * @package App\Http\Controllers
+ */
 class UserController extends Controller
 {
-    public function create(Request $request)
+	/**
+	 * @param Request $request
+	 * @return User
+	 */
+	public function create(Request $request)
     {
         $validatedData = $request->validate(array_merge(User::rules(), Wallet::rules()));
 

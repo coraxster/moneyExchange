@@ -7,9 +7,20 @@ use App\Models\WalletOperation;
 use App\Services\MoneyService;
 use Illuminate\Http\Request;
 
+/**
+ * Class ReportController
+ * @package App\Http\Controllers
+ */
 class ReportController extends Controller
 {
-    public function getHtml(int $walletId, Request $request, MoneyService $moneyService)
+	/**
+	 * @param int $walletId
+	 * @param Request $request
+	 * @param MoneyService $moneyService
+	 * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+	 * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+	 */
+	public function getHtml(int $walletId, Request $request, MoneyService $moneyService)
     {
     	$wallet = Wallet::query()->findOrFail($walletId);
     	$query = WalletOperation::query();

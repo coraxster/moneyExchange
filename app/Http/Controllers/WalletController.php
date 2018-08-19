@@ -9,16 +9,38 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 
 
+/**
+ * Class WalletController
+ * @package App\Http\Controllers
+ */
 class WalletController extends Controller
 {
+	/**
+	 * @var WalletService
+	 */
 	protected $walletService;
+	/**
+	 * @var MoneyService
+	 */
 	protected $moneyService;
+
+	/**
+	 * WalletController constructor.
+	 * @param WalletService $walletService
+	 * @param MoneyService $moneyService
+	 */
 	public function __construct(WalletService $walletService, MoneyService $moneyService)
 	{
 		$this->walletService = $walletService;
 		$this->moneyService = $moneyService;
 	}
 
+	/**
+	 * @param int $walletId
+	 * @param Request $request
+	 * @return array
+	 * @throws \Throwable
+	 */
 	public function refill(int $walletId, Request $request)
     {
         $validatedData = $request->validate(
@@ -41,11 +63,17 @@ class WalletController extends Controller
         ];
     }
 
-    public function transfer(int $fromWalletId, Request $request)
+	/**
+	 * @param int $fromWalletId
+	 * @param Request $request
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function transfer(int $fromWalletId, Request $request) : array
     {
 	    $request->validate([
 		    'currency' => 'required|string|max:255|in:' . implode(',', Config::get('app.currencies')),
-		    'to_wallet_id' => 'required|int',
+		    'to_wallet_id' => 'required|int|not_in:' . $fromWalletId,
 		    'amount' => 'required'
 	    ]);
 
@@ -77,6 +105,4 @@ class WalletController extends Controller
 		    'toWallet' => $toWallet->refresh()
 	    ];
     }
-
-
 }

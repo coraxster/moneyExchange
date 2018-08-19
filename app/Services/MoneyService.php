@@ -21,10 +21,16 @@ use Money\Formatter\DecimalMoneyFormatter;
 use Money\Money;
 use Money\Parser\DecimalMoneyParser;
 
+/**
+ * Class MoneyService
+ * @package App\Services
+ */
 class MoneyService
 {
-	public const RATE_REGEX = '/^\d{1,8}(\.\d{1,8})?$/';
 
+	/**
+	 * @var Currency
+	 */
 	public $mediateCurrency;
 
 	public function __construct(Currency $mediateCurrency = null)
@@ -32,9 +38,9 @@ class MoneyService
 		$this->mediateCurrency = $mediateCurrency ?? new Currency(Config::get('app.mediate_currency'));
 	}
 
-	public function amountToMoney(int $amount, string $currencyCode) : Money
+	public function amountToMoney(int $rawAmount, string $currencyCode) : Money
 	{
-		return new Money($amount, new Currency($currencyCode));
+		return new Money($rawAmount, new Currency($currencyCode));
 	}
 
 	public function parseMoney(string $sum, $currencyCode) : Money
@@ -61,7 +67,21 @@ class MoneyService
 		return new Converter(new ISOCurrencies(), $exchange);
 	}
 
-	public function convertIfNeed(
+	/**
+	 * Converts Money if needed.
+	 * Firstly tries to find direct ExchangeRate.
+	 * If not found tries to convert to $mediateCurrency then $targetCurrency.
+	 * Шf it does not work again, throws Exception
+	 *
+	 * @param Money $money
+	 * @param Currency $targetCurrency
+	 * @param null $roundUp
+	 * @param Currency|null $mediateCurrency
+	 * @param Carbon|null $date
+	 * @return Money
+	 * @throws \Exception
+	 */
+	public function convertIfNeeded(
 		Money $money,
 		Currency $targetCurrency,
 		$roundUp = null,
@@ -91,15 +111,12 @@ class MoneyService
 			throw new \Exception('cant\'t convert :(', ['target' => $targetCurrency]);
 		}
 
-		return $this->convertIfNeed(
-			$this->convertIfNeed($money, $mediateCurrency, $roundUp, $mediateCurrency, $date),
+		return $this->convertIfNeeded(
+			$this->convertIfNeeded($money, $mediateCurrency, $roundUp, $mediateCurrency, $date),
 			$targetCurrency,
 			$roundUp,
 			$mediateCurrency,
 			$date
 		);
 	}
-
-
-
 }

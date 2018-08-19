@@ -7,16 +7,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\Rule;
 
+/**
+ * Class ExchangeRateController
+ * @package App\Http\Controllers
+ */
 class ExchangeRateController extends Controller
 {
-    public function create(Request $request)
+	/**
+	 * @param Request $request
+	 * @return $this|\Illuminate\Database\Eloquent\Model
+	 */
+	public function create(Request $request)
     {
     	$validatedData = $request->validate(ExchangeRate::rules());
 
     	// validate for unique
     	$request->validate(
     		[
-    			'date' => Rule::unique(ExchangeRate::getTableName())->where(function ($query) use ($request) {
+    			'date' => Rule::unique(ExchangeRate::getTableName())
+				    ->where(function ($query) use ($request) {
 				    return $query
 					    ->where([
 					    	'source_currency' => $request->get('source_currency'),
@@ -28,7 +37,6 @@ class ExchangeRateController extends Controller
 		    	'date' => 'ExchangeRate on this date already exists.'
 		    ]
 	    );
-
         return ExchangeRate::query()->create($validatedData);
     }
 }

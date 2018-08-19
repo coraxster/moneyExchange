@@ -23,7 +23,7 @@
 <body>
 <div class="container">
 
-    <h1>Hello report! User: {{ $wallet->user->name }} (WalletId: {{ $wallet->id }})</h1>
+    <h1>Hello {{ $wallet->user->name }}! (WalletId: {{ $wallet->id }})</h1>
     <h2> <span class="badge badge-success">+ {{$depositSum}} {{ $wallet->currency }}</span>
         <span class="badge badge-danger">- {{$withdrawSum}} {{ $wallet->currency }}</span>
     </h2>
@@ -72,21 +72,33 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($ops as $op)
-                        @if($wallet === $op->fromWallet)
-                            <tr class="table-danger">
-                            <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
-                            <td> ({{ $op->withdraw }}{{$op->withdraw_money->getCurrency()}}) => </td>
-                            <td>{{ $op->toWallet->user->name ?? '-' }}</td>
-                        @else
-                            <tr class="table-success">
-                            <td>{{ $op->toWallet->user->name ?? '-' }}</td>
-                            <td> ({{ $op->deposit }} {{$op->deposit_money->getCurrency()}}) => </td>
-                            <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
-                        @endif
-                            <td>{{ $op->created_at }}</td>
+                @forelse($ops as $op)
+                    @if($op->operation_code === $op::OP_CODES['REFILL'])
+                    <tr class="table-primary">
+                        <td>{{ $op->id }}</td>
+                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
+                        <td><= ({{ $op->deposit }} {{ $op->deposit_money->getCurrency() }}) {{ $op->operation }}</td>
+                        <td> - </td>
+                    @elseif($wallet->id === $op->fromWallet->id)
+                    <tr class="table-danger">
+                        <td>{{ $op->id }}</td>
+                        <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
+                        <td> ({{ $op->withdraw }} {{$op->withdraw_money->getCurrency()}}) {{ $op->operation }} => </td>
+                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
+                    @else
+                    <tr class="table-success">
+                        <td>{{ $op->id }}</td>
+                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
+                        <td>  <= ({{ $op->deposit }} {{$op->deposit_money->getCurrency()}}) {{ $op->operation }} </td>
+                        <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
+                    @endif
+                        <td>{{ $op->created_at }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td align="center" colspan="4"><p>nothing</p></td>
+                    </tr>
+                @endforelse
                 </tbody>
             </table>
             {{ $ops->links() }}

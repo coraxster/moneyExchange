@@ -10,9 +10,14 @@ docker-compose run workspace sh -c "composer install && php artisan migrate"
 docker-compose up -d
 ```
 
-### seed(optional)
+### seed data(optional)
 ```bash
 docker-compose run workspace php artisan db:seed
+```
+
+### refresh db(optional)
+```bash
+docker-compose run workspace php artisan migrate:refresh
 ```
 
 ### stop

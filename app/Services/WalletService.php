@@ -14,8 +14,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Money\Money;
 
+/**
+ * Class WalletService
+ * @package App\Services
+ */
 class WalletService
 {
+	/**
+	 * @var MoneyService
+	 */
 	protected $moneyService;
 
 	public function __construct(MoneyService $moneyService)
@@ -23,6 +30,13 @@ class WalletService
 		$this->moneyService = $moneyService;
 	}
 
+	/**
+	 * Refills wallet balance
+	 *
+	 * @param Wallet $wallet
+	 * @param Money $addMoney
+	 * @throws \Throwable
+	 */
 	public function refill(Wallet $wallet, Money $addMoney) : void
 	{
 		DB::beginTransaction();
@@ -30,14 +44,14 @@ class WalletService
 		try {
 			/* @var Wallet $wallet */
 			$wallet = Wallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
-			$addMoney = $this->moneyService->convertIfNeed($addMoney, $wallet->money->getCurrency());
+			$addMoney = $this->moneyService->convertIfNeeded($addMoney, $wallet->money->getCurrency());
 			$wallet->money = $wallet->money->add($addMoney);
 			$wallet->saveOrFail();
 
 			$op = $wallet->depositHistory()->create(
 				[
 					'operation_code' => WalletOperation::OP_CODES['REFILL'],
-					'deposit' => $addMoney->getAmount()
+					'raw_deposit' => $addMoney->getAmount()
 				]
 			);
 
@@ -53,6 +67,14 @@ class WalletService
 	}
 
 
+	/**
+	 * Transfers money between wallets. Supports auto-conversion with moneyService.
+	 *
+	 * @param Wallet $fromWallet
+	 * @param Wallet $toWallet
+	 * @param Money $money
+	 * @throws \Exception
+	 */
 	public function transfer(Wallet $fromWallet, Wallet $toWallet, Money $money) : void
 	{
 		DB::beginTransaction();
@@ -66,8 +88,8 @@ class WalletService
 			$toCurrency = $toWallet->money->getCurrency();
 
 			$mediateCurrency = $this->moneyService->mediateCurrency;
-			$withdrawMoney = $this->moneyService->convertIfNeed($money, $fromCurrency, true, $mediateCurrency);
-			$depositMoney = $this->moneyService->convertIfNeed($money, $toCurrency, false, $mediateCurrency);
+			$withdrawMoney = $this->moneyService->convertIfNeeded($money, $fromCurrency, true, $mediateCurrency);
+			$depositMoney = $this->moneyService->convertIfNeeded($money, $toCurrency, false, $mediateCurrency);
 			if ($depositMoney->isZero() || $withdrawMoney->isZero()) {
 				throw new \Exception('no diff after conversion');
 			}

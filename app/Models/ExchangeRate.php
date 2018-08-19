@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Config;
 use Money\Converter;
 
+/**
+ * Class ExchangeRate
+ * @package App\Models
+ */
 class ExchangeRate extends Model
 {
-	public const DEFAULT_TARGET = 'USD';
+	public const RATE_REGEX = '/^\d{1,8}(\.\d{1,8})?$/';
 
 	public $fillable = [
 		'date',
@@ -19,23 +23,24 @@ class ExchangeRate extends Model
 		'target_currency'
 	];
 
-    public static function rules() : array
+	public static function rules() : array
     {
 	    return [
 		    'date' => 'required|date|date_format:Y-m-d',
-		    'rate' => 'required|numeric|regex:' . MoneyService::RATE_REGEX,
+		    'rate' => 'required|numeric|regex:' . self::RATE_REGEX,
     		'source_currency' => 'required|string|max:255|in:' . implode(',', Config::get('app.currencies')),
     		'target_currency' => 'required_if:source_currency,' . Config::get('app.mediate_currency') .
 			    '|string|max:255|different:source_currency|in:' . implode(',', Config::get('app.currencies'))
 	    ];
     }
 
-	public static function getTableName()
+	public static function getTableName() : string
 	{
 		return (new self)->getTable();
 	}
 
-	public function scopeWithCurrencyPair(Builder $query, $c1, $c2) : Builder
+
+	public function scopeWithCurrencyPair(Builder $query, string $c1, string $c2) : Builder
 	{
 		return $query->where([
 				'source_currency' => $c1,
@@ -48,6 +53,7 @@ class ExchangeRate extends Model
 				]);
 			});
 	}
+
 
 	public function getConverter() : Converter
 	{

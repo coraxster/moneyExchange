@@ -44,7 +44,7 @@ class WalletService
 		try {
 			/* @var Wallet $wallet */
 			$wallet = Wallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
-			$addMoney = $this->moneyService->convertIfNeeded($addMoney, $wallet->money->getCurrency());
+			$addMoney = $this->moneyService->convert($addMoney, $wallet->money->getCurrency());
 			$wallet->money = $wallet->money->add($addMoney);
 			$wallet->saveOrFail();
 
@@ -88,8 +88,8 @@ class WalletService
 			$toCurrency = $toWallet->money->getCurrency();
 
 			$mediateCurrency = $this->moneyService->mediateCurrency;
-			$withdrawMoney = $this->moneyService->convertIfNeeded($money, $fromCurrency, true, $mediateCurrency);
-			$depositMoney = $this->moneyService->convertIfNeeded($money, $toCurrency, false, $mediateCurrency);
+			$withdrawMoney = $this->moneyService->convert($money, $fromCurrency, true, $mediateCurrency);
+			$depositMoney = $this->moneyService->convert($money, $toCurrency, false, $mediateCurrency);
 			if ($depositMoney->isZero() || $withdrawMoney->isZero()) {
 				throw new \Exception('no diff after conversion');
 			}

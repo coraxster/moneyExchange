@@ -81,7 +81,7 @@ class MoneyService
 	 * @return Money
 	 * @throws \Exception
 	 */
-	public function convertIfNeeded(
+	public function convert(
 		Money $money,
 		Currency $targetCurrency,
 		$roundUp = null,
@@ -111,8 +111,8 @@ class MoneyService
 			throw new \Exception('cant\'t convert :(', ['target' => $targetCurrency]);
 		}
 
-		return $this->convertIfNeeded(
-			$this->convertIfNeeded($money, $mediateCurrency, $roundUp, $mediateCurrency, $date),
+		return $this->convert(
+			$this->convert($money, $mediateCurrency, $roundUp, $mediateCurrency, $date),
 			$targetCurrency,
 			$roundUp,
 			$mediateCurrency,

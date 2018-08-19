@@ -9,6 +9,6 @@ $factory->define(App\Models\Wallet::class, function (Faker $faker) {
             return factory(App\Models\User::class)->create()->id;
         },
         'currency' => $faker->randomElement(Config::get('app.currencies')),
-        'raw_amount' => random_int(0, 9999999999)
+        'raw_amount' => random_int(0, 9999999)
     ];
 });

@@ -41,7 +41,7 @@ class WalletController extends Controller
 	 * @return array
 	 * @throws \Throwable
 	 */
-	public function refill(int $walletId, Request $request)
+	public function refill(int $walletId, Request $request) : array
     {
         $validatedData = $request->validate(
         	[

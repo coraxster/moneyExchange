@@ -24,9 +24,18 @@
 <div class="container">
 
     <h1>Hello {{ $wallet->user->name }}! (WalletId: {{ $wallet->id }})</h1>
-    <h2> <span class="badge badge-success">+ {{$depositSum}} {{ $wallet->currency }}</span>
-        <span class="badge badge-danger">- {{$withdrawSum}} {{ $wallet->currency }}</span>
-    </h2>
+    <div class="row">
+        <div class="col-4">
+            <span class="badge badge-success">+ {{ $overall[$wallet->currency]['deposit'] }} {{ $wallet->currency }}</span>
+            <span class="badge badge-danger">- {{ $overall[$wallet->currency]['withdraw'] }} {{ $wallet->currency }}</span>
+        </div>
+        <div class="col-4">
+            @if($wallet->currency !== 'USD')
+                <span class="badge badge-success">+ {{ $overall['USD']['deposit'] }} USD</span>
+                <span class="badge badge-danger">- {{$overall['USD']['withdraw']}} USD</span>
+            @endif
+        </div>
+    </div>
     <form method="GET">
         <div class="row">
                 <div class="col-sm-3">
@@ -65,6 +74,7 @@
             <table class="table table-sm">
                 <thead>
                 <tr>
+                    <th scope="col">OpId</th>
                     <th scope="col">From</th>
                     <th scope="col">Amount</th>
                     <th scope="col">To</th>

@@ -40,13 +40,14 @@ class DatabaseSeeder extends Seeder
 
         foreach ($users as $user) {
         	$walletA = $user->wallet;
-        	for ($i=random_int(10, 100) ; $i>0 ; $i--) {
-		        $walletB = $users[rand(0, 50)]->wallet;
+        	for ($i=random_int(5, 10) ; $i>0 ; $i--) {
+		        $walletB = $users[rand(0, 49)]->wallet;
 		        if ($walletA->id === $walletB->id) {
 		        	continue;
 		        }
-		        $money = $walletA->money->divide(10);
-		        $walletService->transfer($walletA, $walletB, $money);
+		        $money = $walletA->money->divide(rand(2, 8));
+		        [$wa, $wb] = rand(0, 1) ? [$walletA, $walletB] : [$walletB, $walletA];
+		        $walletService->transfer($wa, $wb, $money);
 	        }
         }
     }

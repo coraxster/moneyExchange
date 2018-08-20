@@ -38,7 +38,6 @@ class UserController extends Controller
 		        'user' => $user->load('wallet')
 	        ];
         } catch (\Exception $e) {
-        	dd($e->getMessage());
 	        DB::rollBack();
 	        Log::warning('error with user creating', ['err' => $e->getMessage()]);
 	        return [

@@ -43,31 +43,29 @@ class WalletController extends Controller
 	 */
 	public function refill(int $walletId, Request $request) : array
     {
+	    /* @var Wallet $wallet */
+	    $wallet = Wallet::query()->findOrFail($walletId);
         $validatedData = $request->validate(
         	[
         		'amount' => 'required|numeric|min:0',
-		        'currency' => 'string|max:255|in:' . implode(',', Config::get('app.currencies'))
+		        'currency' => 'required|string|max:255|in:' . $wallet->money->getCurrency()
 	        ]
         );
 
-	    /* @var Wallet $wallet */
-        $wallet = Wallet::query()->findOrFail($walletId);
-	    $validatedData['currency'] = $validatedData['currency'] ?? $wallet->money->getCurrency();
-	    $money = $this->moneyService->parseMoney($validatedData['amount'], $validatedData['currency']);
-
 	    try{
+		    $money = $this->moneyService->parseMoney($validatedData['amount'], $wallet->money->getCurrency());
 		    $this->walletService->refill($wallet, $money);
 	    } catch (\Exception $e) {
 		    return [
 			    'status' => false,
 			    'error' => $e->getMessage(),
-			    'wallet' => $wallet
+			    'wallet' => $wallet->refresh()
 		    ];
 	    }
 
         return [
         	'status' => true,
-	        'wallet' => $wallet
+	        'wallet' => $wallet->refresh()
         ];
     }
 
@@ -100,9 +98,8 @@ class WalletController extends Controller
 		    ['currency.in' => 'Provided currency is not supported by this wallets. Choose one of ' . implode(',', $currencies)]
 	    );
 
-	    $money = $this->moneyService->parseMoney($request->get('amount'), $request->get('currency'));
-
 	    try {
+		    $money = $this->moneyService->parseMoney($request->get('amount'), $request->get('currency'));
 		    $this->walletService->transfer($fromWallet, $toWallet, $money);
 	    } catch (\Exception $e) {
 		    return [

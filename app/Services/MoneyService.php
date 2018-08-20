@@ -27,7 +27,6 @@ use Money\Parser\DecimalMoneyParser;
  */
 class MoneyService
 {
-
 	/**
 	 * @var Currency
 	 */

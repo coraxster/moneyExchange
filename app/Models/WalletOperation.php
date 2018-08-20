@@ -93,13 +93,13 @@ class WalletOperation extends Model
 	{
 		/* @var MoneyService $moneyService */
 		$moneyService = resolve(MoneyService::class);
-		return $moneyService->formatMoney($this->withdraw_money ?? 0);
+		return $moneyService->formatMoney($this->withdraw_money);
 	}
 
 	public function getDepositAttribute() : string
 	{
 		/* @var MoneyService $moneyService */
 		$moneyService = resolve(MoneyService::class);
-		return $moneyService->formatMoney($this->deposit_money ?? 0);
+		return $moneyService->formatMoney($this->deposit_money);
 	}
 }

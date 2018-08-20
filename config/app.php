@@ -211,10 +211,18 @@ return [
 
     ],
 
+	/*
+     * Available currencies.
+	 * Must me ISO
+     */
 	'currencies' => [
 		'USD',
 		'EUR',
 		'RUB'
 	],
+
+	/*
+     * The currency used for exchange.
+     */
 	'mediate_currency' => 'USD'
 ];

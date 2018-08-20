@@ -39,14 +39,17 @@ class WalletService
 	 */
 	public function refill(Wallet $wallet, Money $addMoney) : void
 	{
+		if (! $wallet->money->isSameCurrency($addMoney)) {
+			throw new \Exception('can\'t convert while refill');
+		}
+
 		DB::beginTransaction();
 
 		try {
 			/* @var Wallet $wallet */
 			$wallet = Wallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
-			$addMoney = $this->moneyService->convert($addMoney, $wallet->money->getCurrency());
 			$wallet->money = $wallet->money->add($addMoney);
-			$wallet->saveOrFail();
+			$wallet->save();
 
 			$op = $wallet->depositHistory()->create(
 				[
@@ -86,8 +89,8 @@ class WalletService
 			$toWallet = Wallet::query()->whereKey($toWallet->id)->lockForUpdate()->firstOrFail();
 			$fromCurrency = $fromWallet->money->getCurrency();
 			$toCurrency = $toWallet->money->getCurrency();
-
 			$mediateCurrency = $this->moneyService->mediateCurrency;
+
 			$withdrawMoney = $this->moneyService->convert($money, $fromCurrency, true, $mediateCurrency);
 			$depositMoney = $this->moneyService->convert($money, $toCurrency, false, $mediateCurrency);
 			if ($depositMoney->isZero() || $withdrawMoney->isZero()) {

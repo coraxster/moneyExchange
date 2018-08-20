@@ -71,7 +71,7 @@ class MoneyService
 	 * Converts Money if needed.
 	 * Firstly tries to find direct ExchangeRate.
 	 * If not found tries to convert to $mediateCurrency then $targetCurrency.
-	 * Шf it does not work again, throws Exception
+	 * If it does not work again, throws Exception
 	 *
 	 * @param Money $money
 	 * @param Currency $targetCurrency
@@ -108,14 +108,14 @@ class MoneyService
 
 		if ($mediateCurrency === null || $targetCurrency->equals($mediateCurrency)) {
 			Log::warning('cant\'t convert :(', ['target' => $targetCurrency]);
-			throw new \Exception('cant\'t convert :(', ['target' => $targetCurrency]);
+			throw new \Exception('cant\'t convert :( ' . $sourceCurrency . ' > ' . $targetCurrency);
 		}
 
 		return $this->convert(
-			$this->convert($money, $mediateCurrency, $roundUp, $mediateCurrency, $date),
+			$this->convert($money, $mediateCurrency, $roundUp, null, $date),
 			$targetCurrency,
 			$roundUp,
-			$mediateCurrency,
+			null,
 			$date
 		);
 	}

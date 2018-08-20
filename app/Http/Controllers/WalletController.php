@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ConversionNotAllowed;
 use App\Models\Wallet;
 use App\Services\MoneyService;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 
 
 /**
@@ -55,7 +57,15 @@ class WalletController extends Controller
 	    $validatedData['currency'] = $validatedData['currency'] ?? $wallet->money->getCurrency();
 	    $money = $this->moneyService->parseMoney($validatedData['amount'], $validatedData['currency']);
 
-	    $this->walletService->refill($wallet, $money);
+	    try{
+		    $this->walletService->refill($wallet, $money);
+	    } catch (\Exception $e) {
+		    return [
+			    'status' => false,
+			    'error' => $e->getMessage(),
+			    'wallet' => $wallet
+		    ];
+	    }
 
         return [
         	'status' => true,
@@ -88,16 +98,22 @@ class WalletController extends Controller
 	    ];
 
 	    $request->validate(
-	    	[
-            'currency' => 'required|string|max:255|in:' . implode(',', $currencies)
-		    ],
-		    [
-		    	'currency.in' => 'Provided currency is not supported by this wallets. Choose one of ' . implode(',', $currencies)
-		    ]);
+	    	['currency' => 'required|string|max:255|in:' . implode(',', $currencies)],
+		    ['currency.in' => 'Provided currency is not supported by this wallets. Choose one of ' . implode(',', $currencies)]
+	    );
 
 	    $money = $this->moneyService->parseMoney($request->get('amount'), $request->get('currency'));
 
-	    $this->walletService->transfer($fromWallet, $toWallet, $money);
+	    try {
+		    $this->walletService->transfer($fromWallet, $toWallet, $money);
+	    } catch (\Exception $e) {
+		    return [
+			    'status' => false,
+			    'error' => $e->getMessage(),
+			    'fromWallet' => $fromWallet->refresh(),
+			    'toWallet' => $toWallet->refresh()
+		    ];
+	    }
 
 	    return [
 	    	'status' => true,

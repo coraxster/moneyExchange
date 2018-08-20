@@ -8,6 +8,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ConversionNotAllowed;
 use App\Models\Wallet;
 use App\Models\WalletOperation;
 use Illuminate\Support\Facades\DB;
@@ -35,12 +36,13 @@ class WalletService
 	 *
 	 * @param Wallet $wallet
 	 * @param Money $addMoney
+	 * @throws ConversionNotAllowed
 	 * @throws \Throwable
 	 */
 	public function refill(Wallet $wallet, Money $addMoney) : void
 	{
 		if (! $wallet->money->isSameCurrency($addMoney)) {
-			throw new \Exception('can\'t convert while refill');
+			throw new ConversionNotAllowed('can\'t convert while refill');
 		}
 
 		DB::beginTransaction();

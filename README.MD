@@ -35,6 +35,11 @@ docker-compose stop
 http://127.0.0.1:8085/report/{walletId}
 ```
 
+### download report
+```
+http://127.0.0.1:8085/report/{walletId}/csv
+```
+
 ### test
 open Paw.paw in repo
 

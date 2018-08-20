@@ -21,14 +21,6 @@ class ReportController extends Controller
 	 */
 	protected $moneyService;
 
-	protected static $csvFileHeaders = array(
-		'Content-type' => 'text/csv',
-		'Content-Disposition' => 'attachment; filename=file.csv',
-		'Pragma' => 'no-cache',
-		'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-		'Expires' => '0'
-	);
-
 	/**
 	 * ReportController constructor.
 	 * @param MoneyService $moneyService
@@ -47,6 +39,7 @@ class ReportController extends Controller
 	 */
 	public function getHtml(int $walletId, Request $request)
     {
+	    /* @var Wallet $wallet */
     	$wallet = Wallet::query()->findOrFail($walletId);
     	$query = WalletOperation::query();
     	if ($request->filled('from-date')) {
@@ -80,6 +73,7 @@ class ReportController extends Controller
 	 */
 	public function getCsv(int $walletId, Request $request) : StreamedResponse
     {
+	    /* @var Wallet $wallet */
 	    $wallet = Wallet::query()->findOrFail($walletId);
 	    $query = WalletOperation::query();
 	    if ($request->filled('from-date')) {
@@ -95,43 +89,10 @@ class ReportController extends Controller
 		    ->orderBy('id', 'desc')
 		    ->with(['fromWallet.user', 'toWallet.user']);
 
-	    $callback = function() use ($query, $wallet, $overall) {
-		    $file = fopen('php://output', 'w');
-		    fputcsv($file, ['opId', 'from', 'amount', 'currency', 'operation', 'to', 'date']);
+	    $closure = $this->makeCsvClosure($query, $wallet, $overall);
+	    $headers = $this->getCsvHeaders($wallet);
 
-		    $lastId = null;
-		    do {
-		    	if ($lastId) {
-				    $query->where('id', '<', $lastId);
-			    }
-			    $ops = $query->limit(50)->get();
-			    foreach($ops as $op) {
-				    $lastId = $op->id;
-				    fputcsv($file, [
-						    $op->id,
-						    $op->fromWallet->user->name ?? '-',
-						    ($wallet->id === $op->toWallet->id) ? $op->deposit : $op->withdraw,
-						    ($wallet->id === $op->toWallet->id) ? $op->deposit_money->getCurrency() : $op->withdraw_money->getCurrency(),
-						    $op->operation,
-						    $op->toWallet->user->name ?? '-',
-						    $op->created_at
-					    ]
-				    );
-			    }
-		    } while ($ops->count());
-
-		    foreach ($overall as $currency_code => $data){
-			    fputcsv($file, [
-					    "overall({$currency_code}): ",
-					    -$data['withdraw'],
-					    $data['deposit']
-				    ]
-			    );
-		    }
-		    fclose($file);
-	    };
-	    return Response::stream($callback, 200, self::$csvFileHeaders);
-
+	    return Response::stream($closure, 200, $headers);
     }
 
 	/**
@@ -165,6 +126,65 @@ class ReportController extends Controller
 				'withdraw' => $withdrawSumUSD,
 				'deposit' => $depositSumUSD
 			]
+		];
+	}
+
+	/**
+	 * @param $query
+	 * @param Wallet $wallet
+	 * @param array $overall
+	 * @return \Closure
+	 */
+	protected function makeCsvClosure($query, Wallet $wallet, array $overall): \Closure
+	{
+		return function () use ($query, $wallet, $overall) {
+			$file = fopen('php://output', 'w');
+			fputcsv($file, ['opId', 'from', 'amount', 'currency', 'operation', 'to', 'date']);
+
+			$query->orderBy('id', 'desc'); // make sure the ordering is right
+			$lastId = null;
+			do {
+				if ($lastId) {
+					$query->where('id', '<', $lastId); // '<' because desc ordering
+				}
+				$ops = $query->limit(50)->get();
+				foreach ($ops as $op) {
+					$lastId = $op->id;
+					fputcsv($file, [
+							$op->id,
+							$op->fromWallet->user->name ?? '-',
+							($wallet->id === $op->toWallet->id) ? $op->deposit : $op->withdraw,
+							($wallet->id === $op->toWallet->id) ? $op->deposit_money->getCurrency() : $op->withdraw_money->getCurrency(),
+							$op->operation,
+							$op->toWallet->user->name ?? '-',
+							$op->created_at
+						]
+					);
+				}
+			} while ($ops->count());
+
+			foreach ($overall as $currency_code => $data) {
+				fputcsv($file, [
+						"overall({$currency_code}): ",
+						-$data['withdraw'],
+						$data['deposit']
+					]
+				);
+			}
+			fclose($file);
+		};
+	}
+
+	protected function getCsvHeaders(Wallet $wallet) : array
+	{
+		$today = today()->format('Y-m-d');
+		$filename = "{$wallet->user->name} - {$today}.csv";
+		return [
+			'Content-type' => 'text/csv',
+			'Content-Disposition' => "attachment; filename={$filename}",
+			'Pragma' => 'no-cache',
+			'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+			'Expires' => '0'
 		];
 	}
 }

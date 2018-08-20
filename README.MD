@@ -5,6 +5,11 @@
 docker-compose run workspace sh -c "composer install && php artisan migrate"
 ```
 
+### run tests
+```bash
+docker-compose run workspace ./vendor/bin/phpunit
+```
+
 ### run
 ```bash
 docker-compose up -d

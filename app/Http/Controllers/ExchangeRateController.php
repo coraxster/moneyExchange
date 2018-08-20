@@ -15,7 +15,7 @@ class ExchangeRateController extends Controller
 {
 	/**
 	 * @param Request $request
-	 * @return $this|\Illuminate\Database\Eloquent\Model
+	 * @return array
 	 */
 	public function create(Request $request)
     {
@@ -37,6 +37,10 @@ class ExchangeRateController extends Controller
 		    	'date' => 'ExchangeRate on this date already exists.'
 		    ]
 	    );
-        return ExchangeRate::query()->create($validatedData);
+    	$rate = ExchangeRate::query()->create($validatedData);
+    	return [
+    		'status' => true,
+		    'rate' => $rate
+	    ];
     }
 }

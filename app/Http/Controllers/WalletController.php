@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ConversionNotAllowed;
 use App\Models\Wallet;
 use App\Services\MoneyService;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 
 
 /**

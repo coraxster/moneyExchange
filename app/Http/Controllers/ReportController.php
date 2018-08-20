@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Wallet;
 use App\Models\WalletOperation;
 use App\Services\MoneyService;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Money\Currency;
 

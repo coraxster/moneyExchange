@@ -18,7 +18,7 @@ class UserController extends Controller
 {
 	/**
 	 * @param Request $request
-	 * @return User
+	 * @return array
 	 */
 	public function create(Request $request)
     {
@@ -33,12 +33,18 @@ class UserController extends Controller
 	        $wallet->money = new Money(0, new Currency($validatedData['currency']));
 	        $wallet->save();
 	        DB::commit();
-	        return $user->load('wallet');
+	        return [
+	        	'status' => true,
+		        'user' => $user->load('wallet')
+	        ];
         } catch (\Exception $e) {
         	dd($e->getMessage());
 	        DB::rollBack();
 	        Log::warning('error with user creating', ['err' => $e->getMessage()]);
-	        abort(500, 'Creating failed. :(');
+	        return [
+		        'status' => false,
+		        'error' => 'Creating failed. :('
+	        ];
         }
     }
 }

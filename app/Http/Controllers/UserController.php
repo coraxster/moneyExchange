@@ -42,7 +42,7 @@ class UserController extends Controller
 	        Log::warning('error with user creating', ['err' => $e->getMessage()]);
 	        return [
 		        'status' => false,
-		        'error' => 'Creating failed. :('
+		        'errors' => ['Creating failed. :(']
 	        ];
         }
     }

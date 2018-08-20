@@ -10,6 +10,20 @@ use Illuminate\Support\Facades\Config;
 
 class DatabaseSeeder extends Seeder
 {
+
+	protected $defaultCurrencies = [
+		'USD' => [
+			'source_currency' => 'RUB',
+			'target_currency' => 'USD',
+			'rate' => 67.543223
+		],
+		'EUR' => [
+			'source_currency' => 'EUR',
+			'target_currency' => 'USD',
+			'rate' => 0.823423
+		]
+	];
+
 	/**
 	 * Seed the application's database.
 	 *
@@ -21,7 +35,6 @@ class DatabaseSeeder extends Seeder
         $users = factory(User::class, 50)->create()->each(function (User $u) {
             $u->wallet()->save(factory(Wallet::class)->make());
         });
-
 	    $this->seedCurrencies($users);
 	    $this->seedTransfers($users);
     }
@@ -31,6 +44,11 @@ class DatabaseSeeder extends Seeder
 	 */
 	protected function seedCurrencies($users): void
 	{
+		foreach ($this->defaultCurrencies as $currencyData) {
+			$currencyData['date'] = today();
+			factory(ExchangeRate::class)->create($currencyData);
+		}
+
 		$currencies = $users->pluck('wallet.currency')->unique();
 		foreach ($currencies as $currency) {
 			$exists = ExchangeRate::query()->where([

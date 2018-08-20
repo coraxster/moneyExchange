@@ -30,7 +30,7 @@ docker-compose run workspace php artisan migrate:refresh
 docker-compose stop
 ```
 
-### browse
+### browse report
 ```
 http://127.0.0.1:8085/report/{walletId}
 ```

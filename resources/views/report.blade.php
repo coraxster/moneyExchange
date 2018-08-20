@@ -94,13 +94,13 @@
                         <td>{{ $op->id }}</td>
                         <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
                         <td> ({{ $op->withdraw }} {{$op->withdraw_money->getCurrency()}}) {{ $op->operation }} => </td>
-                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
+                        <td><a href="{{ $op->toWallet->id ?? '#' }}">{{ $op->toWallet->user->name ?? '-' }}</a></td>
                     @else
                     <tr class="table-success">
                         <td>{{ $op->id }}</td>
                         <td>{{ $op->toWallet->user->name ?? '-' }}</td>
                         <td>  <= ({{ $op->deposit }} {{$op->deposit_money->getCurrency()}}) {{ $op->operation }} </td>
-                        <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
+                        <td><a href="{{ $op->fromWallet->id ?? '#' }}">{{ $op->fromWallet->user->name ?? '-' }}</a></td>
                     @endif
                         <td>{{ $op->created_at }}</td>
                     </tr>

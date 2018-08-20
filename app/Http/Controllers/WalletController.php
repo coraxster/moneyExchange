@@ -58,7 +58,7 @@ class WalletController extends Controller
 	    } catch (\Exception $e) {
 		    return [
 			    'status' => false,
-			    'error' => $e->getMessage(),
+			    'errors' => [$e->getMessage()],
 			    'wallet' => $wallet->refresh()
 		    ];
 	    }
@@ -104,7 +104,7 @@ class WalletController extends Controller
 	    } catch (\Exception $e) {
 		    return [
 			    'status' => false,
-			    'error' => $e->getMessage(),
+			    'errors' => [$e->getMessage()],
 			    'fromWallet' => $fromWallet->refresh(),
 			    'toWallet' => $toWallet->refresh()
 		    ];

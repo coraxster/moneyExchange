@@ -63,7 +63,7 @@ class WalletTransferTest extends TestCase
 
 	public function testTransferWithSingleConversion()
 	{
-		$this->makeExchengeRate('RUB', 'USD', 67.543223);
+		$this->makeExchangeRate('RUB', 'USD', 67.543223);
 		$u1 = $this->makeUserWithCurrency('USD');
 		$u2 = $this->makeUserWithCurrency('RUB');
 		$w1 = $u1->wallet;
@@ -98,8 +98,8 @@ class WalletTransferTest extends TestCase
 
 	public function testTransferWithDoubleConversion()
 	{
-		$this->makeExchengeRate('RUB', 'USD', 67.543223);
-		$this->makeExchengeRate('EUR', 'USD', 0.823423);
+		$this->makeExchangeRate('RUB', 'USD', 67.543223);
+		$this->makeExchangeRate('EUR', 'USD', 0.823423);
 		$u1 = $this->makeUserWithCurrency('RUB');
 		$u2 = $this->makeUserWithCurrency('EUR');
 		$w1 = $u1->wallet;
@@ -139,8 +139,8 @@ class WalletTransferTest extends TestCase
 
 	public function testTransferRounding()
 	{
-		$this->makeExchengeRate('RUB', 'USD', 67.543223);
-		$this->makeExchengeRate('EUR', 'USD', 0.823423);
+		$this->makeExchangeRate('RUB', 'USD', 67.543223);
+		$this->makeExchangeRate('EUR', 'USD', 0.823423);
 
 		$u1 = $this->makeUserWithCurrency('EUR');
 		$u2 = $this->makeUserWithCurrency('RUB');
@@ -183,7 +183,7 @@ class WalletTransferTest extends TestCase
 
 
 
-	protected function makeExchengeRate($from, $to, $rate) : ExchangeRate
+	protected function makeExchangeRate($from, $to, $rate) : ExchangeRate
 	{
 		$data = [
 			'date' => today(),

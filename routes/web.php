@@ -12,3 +12,4 @@
 */
 
 Route::get('/report/{walletId}', 'ReportController@getHtml');
+Route::get('/report/{walletId}/csv', 'ReportController@getCsv');

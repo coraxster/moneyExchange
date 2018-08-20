@@ -64,6 +64,14 @@ class WalletOperation extends Model
         return $query->where(['operation_code' => self::OP_CODES['TRANSFER']]);
     }
 
+	public function scopeWithWallet(Builder $query, Wallet $wallet) : Builder
+	{
+		return $query->where(function($query) use ($wallet) {
+			$query->where('from_wallet_id', $wallet->id)
+				->orWhere('to_wallet_id', $wallet->id);
+		});
+	}
+
 
 
 	public function getOperationAttribute() : string

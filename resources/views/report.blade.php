@@ -83,35 +83,32 @@
                 </thead>
                 <tbody>
                 @forelse($ops as $op)
-                    @if($op->operation_code === $op::OP_CODES['REFILL'])
-                    <tr class="table-primary">
-                        <td>{{ $op->id }}</td>
-                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
-                        <td><= ({{ $op->deposit }} {{ $op->deposit_money->getCurrency() }}) {{ $op->operation }}</td>
-                        <td> - </td>
-                    @elseif($wallet->id === $op->fromWallet->id)
-                    <tr class="table-danger">
-                        <td>{{ $op->id }}</td>
-                        <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
-                        <td> ({{ $op->withdraw }} {{$op->withdraw_money->getCurrency()}}) {{ $op->operation }} => </td>
-                        <td><a href="{{ $op->toWallet->id ?? '#' }}">{{ $op->toWallet->user->name ?? '-' }}</a></td>
+                    @if($wallet->id === $op->toWallet->id)
+                        <tr class="table-success">
+                            <td>{{ $op->id }}</td>
+                            <td><a href="{{ $op->fromWallet->id ?? '#' }}">{{ $op->fromWallet->user->name ?? '' }}</a></td>
+                            <td> ({{ $op->deposit }} {{ $op->deposit_money->getCurrency() }}) {{ $op->operation }} => </td>
+                            <td>{{ $op->toWallet->user->name ?? '-' }}</td>
                     @else
-                    <tr class="table-success">
-                        <td>{{ $op->id }}</td>
-                        <td>{{ $op->toWallet->user->name ?? '-' }}</td>
-                        <td>  <= ({{ $op->deposit }} {{$op->deposit_money->getCurrency()}}) {{ $op->operation }} </td>
-                        <td><a href="{{ $op->fromWallet->id ?? '#' }}">{{ $op->fromWallet->user->name ?? '-' }}</a></td>
+                        <tr class="table-danger">
+                            <td>{{ $op->id }}</td>
+                            <td>{{ $op->fromWallet->user->name ?? '-' }}</td>
+                            <td> ({{ $op->withdraw }} {{$op->withdraw_money->getCurrency()}}) {{ $op->operation }} => </td>
+                            <td><a href="{{ $op->toWallet->id ?? '#' }}">{{ $op->toWallet->user->name ?? '-' }}</a></td>
                     @endif
-                        <td>{{ $op->created_at }}</td>
-                    </tr>
+                            <td>{{ $op->created_at }}</td>
+                        </tr>
                 @empty
                     <tr>
-                        <td align="center" colspan="4"><p>nothing</p></td>
+                        <td align="center" colspan="5"><p>nothing</p></td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
             {{ $ops->links() }}
+            @if($ops->count())
+                <a href="{{ url("/report/{$wallet->id}/csv") }}?{{ request()->getQueryString() }}" class="btn btn-primary search-btn">Download CSV</a>
+            @endif
         </div>
     </div>
 </div> <!-- /container -->

@@ -8,7 +8,6 @@
 
 namespace App\Services;
 
-use App\Models\ExchangeRate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
@@ -28,12 +27,18 @@ use Money\Parser\DecimalMoneyParser;
 class MoneyService
 {
 	/**
+	 * @var CurrencyService
+	 */
+	protected $currencyService;
+
+	/**
 	 * @var Currency
 	 */
 	public $mediateCurrency;
 
-	public function __construct(Currency $mediateCurrency = null)
+	public function __construct(CurrencyService $currencyService, Currency $mediateCurrency = null)
 	{
+		$this->currencyService = $currencyService;
 		$this->mediateCurrency = $mediateCurrency ?? new Currency(Config::get('app.mediate_currency'));
 	}
 
@@ -74,7 +79,7 @@ class MoneyService
 	 *
 	 * @param Money $money
 	 * @param Currency $targetCurrency
-	 * @param null $roundUp
+	 * @param bool $roundUp
 	 * @param Currency|null $mediateCurrency
 	 * @param Carbon|null $date
 	 * @return Money
@@ -83,7 +88,7 @@ class MoneyService
 	public function convert(
 		Money $money,
 		Currency $targetCurrency,
-		$roundUp = null,
+		bool $roundUp = null,
 		Currency $mediateCurrency = null,
 		Carbon $date = null
 	) : Money
@@ -95,14 +100,9 @@ class MoneyService
 		$date = $date ?? today();
 		$sourceCurrency = $money->getCurrency();
 
-		/* @var ExchangeRate $rate */
-		$rate = ExchangeRate::query()
-			->where('date', $date)
-			->withCurrencyPair($sourceCurrency->getCode(), $targetCurrency->getCode())
-			->first();
-
-		if ($rate) {
-			return $rate->getConverter()->convert($money, $targetCurrency, $round);
+		$converter = $this->currencyService->findConverter($sourceCurrency, $targetCurrency, $date);
+		if ($converter) {
+			return $converter->convert($money, $targetCurrency, $round);
 		}
 
 		if ($mediateCurrency === null || $targetCurrency->equals($mediateCurrency)) {

@@ -167,7 +167,8 @@ class ReportController extends Controller
 				fputcsv($file, [
 						"overall({$currency_code}): ",
 						-$data['withdraw'],
-						$data['deposit']
+						$data['deposit'],
+						$currency_code
 					]
 				);
 			}
